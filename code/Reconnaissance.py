@@ -151,13 +151,14 @@ class Ui_Reconnaissance(object):
     def apprentissage(self):
         self.progress.setText("⚙")
         draw_classNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-        dataset_dir = "../quick_draw_dataset"  # Dossier
-        files = [name for name in os.listdir(dataset_dir) if ".npy" in name]
-        draw_classDrawings = []
-        for name in files:
-            # Open each dataset and add the new class
-            draw_classDrawings.append(name.replace("full_numpy_bitmap_", "").replace(".npy", ""))
+        #dataset_dir = "../quick_draw_dataset"  # Dossier
+        #files = [name for name in os.listdir(dataset_dir) if ".npy" in name]
+        #draw_classDrawings = []
+        #for name in files:
+        #    # Open each dataset and add the new class
+        #    draw_classDrawings.append(name.replace("full_numpy_bitmap_", "").replace(".npy", ""))
 
+        draw_classDrawings = ["airplane","apple","book","brain","car","chair","dog","eye","face","guitar","rabbit","The Eiffel Tower"]
         self.labels = draw_classNumbers + draw_classDrawings
         self.progress.setText("")
         self.pushButton_4.setText("Chargé !")

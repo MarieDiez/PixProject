@@ -1,5 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PIL import Image, ImageTk #, ImageGrab
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QImage, QPainter
 from threading import Thread
@@ -9,7 +8,6 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from PIL import Image
 import time
 import MainWindow as menu
 

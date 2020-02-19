@@ -33,10 +33,10 @@ class Canvas(QtWidgets.QLabel):
         super().__init__()
         if first:
             self.valuePen = valuePen
-            self.setPixmap(QtGui.QPixmap("../images/blanc1.png"))
+            self.setPixmap(QtGui.QPixmap("images/blanc1.png"))
             self.pen_color = QtGui.QColor('#000000')
         else :
-            self.setPixmap(QtGui.QPixmap("../images/blanc.png"))
+            self.setPixmap(QtGui.QPixmap("images/blanc.png"))
             self.pen_color = QtGui.QColor('#FFFFFF')
         self.last_x, self.last_y = None, None
         self.pix = self.pixmap()
@@ -108,7 +108,7 @@ class Ui_Reconnaissance(object):
     def clear(self):
         global crayon
         crayon = "none"
-        self.canvas.setPixmap(QtGui.QPixmap("../images/blanc1.png"))
+        self.canvas.setPixmap(QtGui.QPixmap("images/blanc1.png"))
         self.canvas.pix = self.canvas.pixmap()
         self.canvas.setStart(False)
 
@@ -175,14 +175,14 @@ class Ui_Reconnaissance(object):
     def reconnaissance(self):
         self.save()
         self.progress.setText("⚙")
-        img = self.openImageInverseColor("../monDessin")
+        img = self.openImageInverseColor("monDessin")
         img /= 255
         img = img.reshape(-1, 28, 28, 1)
-        model = tf.keras.models.load_model("../model")
+        model = tf.keras.models.load_model("model")
         prediction = model.predict(img)
         self.progress.setText("")
         self.label.setText(str(self.labels[np.argmax(prediction)]))
-        image = "../images/reponses/"+str(self.labels[np.argmax(prediction)])+".jpg"
+        image = "images/reponses/"+str(self.labels[np.argmax(prediction)])+".jpg"
         pixmap = QtGui.QPixmap(image)
 
         if (pixmap.width() > pixmap.height()):
@@ -211,7 +211,7 @@ class Ui_Reconnaissance(object):
     def save(self):
         img = QImage(self.canvas.pix)
         img = img.scaled(28,28)
-        img.save("../monDessin.jpg", "JPG")
+        img.save("monDessin.jpg", "JPG")
 
     def gomme(self):
         global crayon
@@ -326,7 +326,7 @@ class Ui_Reconnaissance(object):
         self.pushButton_4 = QtWidgets.QPushButton(self.widget_2)
         self.pushButton_4.setGeometry(QtCore.QRect(590, 40, 220, 29))
         self.pushButton_4.setObjectName("pushButton_4")
-        self.pushButton_4.setIcon(QtGui.QIcon("../images/learn.png"))
+        self.pushButton_4.setIcon(QtGui.QIcon("images/learn.png"))
         self.pushButton_4.setIconSize(QtCore.QSize(100, 70))
         self.pushButton_5 = QtWidgets.QPushButton(self.widget_2)
         self.pushButton_5.setGeometry(QtCore.QRect(840, 40, 87, 29))

@@ -45,11 +45,11 @@ class Ui_traitementImage(QtWidgets.QWidget):
                                      QtWidgets.QMessageBox.Yes)
         if reply == QtWidgets.QMessageBox.Yes:
             if ext == "jpg" or ext == "jpeg" :
-               img.save("../mesImagesEnregistrees/"+name+"Bis.jpg", "JPG")
+               img.save("mesImagesEnregistrees/"+name+"Bis.jpg", "JPG")
             elif ext == "gif":
-                img.save("../mesImagesEnregistrees/"+name + "Bis.gif", "GIF")
+                img.save("mesImagesEnregistrees/"+name + "Bis.gif", "GIF")
             elif ext == "png":
-                img.save("../mesImagesEnregistrees/"+name + "Bis.png", "PNG")
+                img.save("mesImagesEnregistrees/"+name + "Bis.png", "PNG")
 
 
     def niveauDeGris(self):
@@ -390,7 +390,7 @@ class Ui_traitementImage(QtWidgets.QWidget):
         self.label_6 = QtWidgets.QLabel(self.centralwidget)
         self.label_6.setGeometry(QtCore.QRect(980, 650, 111, 111))
         self.label_6.setText("")
-        self.label_6.setPixmap(QtGui.QPixmap("../images/220px-Colors-i54-ring.png"))
+        self.label_6.setPixmap(QtGui.QPixmap("images/220px-Colors-i54-ring.png"))
         self.label_6.setObjectName("label_6")
         self.label_7 = QtWidgets.QLabel(self.centralwidget)
         self.label_7.setGeometry(QtCore.QRect(70, 50, 63, 20))
@@ -403,7 +403,7 @@ class Ui_traitementImage(QtWidgets.QWidget):
         self.label_9 = QtWidgets.QLabel(self.centralwidget)
         self.label_9.setGeometry(QtCore.QRect(20, 10, 101, 91))
         self.label_9.setText("")
-        self.label_9.setPixmap(QtGui.QPixmap("../images/retouche.png"))
+        self.label_9.setPixmap(QtGui.QPixmap("images/retouche.png"))
         self.label_9.setObjectName("label_9")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)

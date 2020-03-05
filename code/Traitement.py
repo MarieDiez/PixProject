@@ -10,6 +10,7 @@ import numpy as np
 import os
 import time
 import MainWindow as menu
+import MainWindow as menu
 from PIL import Image
 
 class Action(Thread):
@@ -36,7 +37,7 @@ class Ui_traitementImage(QtWidgets.QWidget):
         self.menu.show()
         MainWindow.close()
 
-    def save(self):
+    def save(self, MainWindow):
         name, ext = file_name.split("/")[-1].split(".")
         reply = QtWidgets.QMessageBox.question(MainWindow,
                                      'Sauvegarder',
@@ -489,7 +490,7 @@ class Ui_traitementImage(QtWidgets.QWidget):
         self.actionNiveau_de_gris.triggered.connect(self.niveauDeGrisT)
         self.actionN_gatif.triggered.connect(self.negatifT)
         self.actionAnnuler.triggered.connect(self.annuler)
-        self.actionEnregistrer_image.triggered.connect(self.save)
+        self.actionEnregistrer_image.triggered.connect(lambda: self.save(MainWindow))
         self.actionPhotomaton.triggered.connect(self.photomatonT)
         self.actionMirroir.triggered.connect(self.mirroirT)
         self.actionRotation_180.triggered.connect(self.rotation_180T)

@@ -10,6 +10,7 @@ import numpy as np
 import os
 import time
 import MainWindow as menu
+import ListePossibilite
 from PIL import Image
 
 class Action(Thread):
@@ -75,7 +76,12 @@ class Canvas(QtWidgets.QLabel):
         self.last_y = e.y()
 
     def annuler(self):
+        self.sauvBack = self.pixmap().copy()
         return self.sauv
+
+    def revenir(self):
+        self.sauv = self.pixmap().copy()
+        return self.sauvBack
 
 
     def mouseReleaseEvent(self, e):
@@ -112,20 +118,25 @@ class Ui_Reconnaissance(object):
         self.canvas.pix = self.canvas.pixmap()
         self.canvas.setStart(False)
 
-    def openImage(self, filename):
-        img = Image.open(filename + '.jpg')
-        data = np.array(img, dtype='uint8')
-        image = np.zeros((28, 28))
-
-        for i in range(0, 27):
-            for j in range(0, 27):
-                if (data[i][j][0] > 100):
-                    image[i][j] = 0
-                else:
-                    image[i][j] = 255
-
-        # plt.imshow(image,cmap="binary")
-        return image
+    def openImage(self, MainWindow):
+        filename, _ = QFileDialog.getOpenFileName(MainWindow, 'Open Image File', r"<Default dir>",
+                                                   "Image files (*.jpg *.jpeg *.gif *.png)")
+        filen = ""
+        keep = False
+        for n in filename.split("/"):
+            if keep:
+                if not "jpg" in n and not "png" in n:
+                    filen += n+"/"
+                else :
+                    filen += n
+            if n == "PixGui":
+                keep = True
+        img = QImage(filen)
+        img = img.scaled(550,550)
+        img.save("monDessin.jpg", "JPG")
+        self.canvas.setPixmap(QtGui.QPixmap(img))
+        self.canvas.pix = self.canvas.pixmap()
+        self.nonAuto()
 
     def openImageKeepColor(self, filename):
         img = Image.open(filename + '.jpg')
@@ -136,14 +147,14 @@ class Ui_Reconnaissance(object):
                 image[i][j] = data[i][j][0]
         return image
 
-    def openImageInverseColor(self,filename):
+    def openImageInverseColor(self, filename):
         # 0 = blanc et 1 = noir en binary
         img = Image.open(filename + '.jpg')
         data = np.array(img, dtype='uint8')
         image = np.zeros((28, 28))
         for i in range(0, 27):
             for j in range(0, 27):
-                if (data[i][j][0] > 100):
+                if (data[i][j][0] > 120):
                     image[i][j] = 0
                 else:
                     image[i][j] = 255
@@ -155,7 +166,7 @@ class Ui_Reconnaissance(object):
         file = open("draws", "r")
         draw_classDrawings = list()
         for ligne in file:
-            draw_classDrawings.append(ligne)
+            draw_classDrawings.append(ligne.split("\n")[0])
         self.labels = draw_classNumbers + draw_classDrawings
         self.progress.setText("")
         self.pushButton_4.setText("Chargé !")
@@ -171,10 +182,10 @@ class Ui_Reconnaissance(object):
     def reconnaissance(self):
         self.save()
         self.progress.setText("⚙")
+        model = tf.keras.models.load_model("model")
         img = self.openImageInverseColor("monDessin")
         img /= 255
         img = img.reshape(-1, 28, 28, 1)
-        model = tf.keras.models.load_model("model")
         prediction = model.predict(img)
         self.progress.setText("")
         self.label.setText(str(self.labels[np.argmax(prediction)]))
@@ -205,6 +216,7 @@ class Ui_Reconnaissance(object):
         status = True
 
     def save(self):
+        #TODO doubler le trait quand on enregistre
         img = QImage(self.canvas.pix)
         img = img.scaled(28,28)
         img.save("monDessin.jpg", "JPG")
@@ -213,6 +225,7 @@ class Ui_Reconnaissance(object):
         global crayon
         crayon = "white"
         self.canvas.pen_color = QtGui.QColor('#FFFFFF')
+
 
     def pen(self):
         global crayon
@@ -243,6 +256,10 @@ class Ui_Reconnaissance(object):
         self.canvas.setPixmap(self.canvas.annuler())
         self.canvas.pix = self.canvas.pixmap()
 
+    def revenir(self):
+        self.canvas.setPixmap(self.canvas.revenir())
+        self.canvas.pix = self.canvas.pixmap()
+
     def menu(self, MainWindow):
         # TODO show create an instance of menu here ?
         self.menu = QtWidgets.QMainWindow()
@@ -263,8 +280,16 @@ class Ui_Reconnaissance(object):
         self.canvas.setAuto(False)
         self.pushButton_5.show()
 
+    def listePoss(self):
+        self.liste = QtWidgets.QMainWindow()
+        self.ui = ListePossibilite.Ui_listePossibilite()
+        self.ui.setupUi(self.liste)
+        self.liste.show()
+
     def setupUi(self, MainWindow):
         global status, crayon
+        minPen = 12
+        maxPen = 50
         self.timer = QtCore.QTimer()
         status = True
         crayon = "black"
@@ -293,8 +318,8 @@ class Ui_Reconnaissance(object):
         self.label.setObjectName("label")
         self.spinbox = QtWidgets.QSpinBox(self.centralwidget)
         self.spinbox.setMinimumSize(1, 1)
-        self.spinbox.setMaximum(20)
-        self.spinbox.setMinimum(8)
+        self.spinbox.setMaximum(maxPen)
+        self.spinbox.setMinimum(minPen)
         self.spinbox.setGeometry(QtCore.QRect(450, 45, 87, 29))
         self.pushButton = QtWidgets.QPushButton(self.widget_2)
         self.pushButton.setGeometry(QtCore.QRect(50, 40, 87, 29))
@@ -308,7 +333,7 @@ class Ui_Reconnaissance(object):
         self.label_2 = QtWidgets.QLabel(self.widget_2)
         self.label_2.setGeometry(QtCore.QRect(540, 10, 41, 81))
         self.progress = QtWidgets.QLabel(self.centralwidget)
-        self.progress.setGeometry(QtCore.QRect(922, 30, 100, 100))
+        self.progress.setGeometry(QtCore.QRect(925, 85, 100, 100))
         self.progress.setFont(QtGui.QFont('SansSerif', 50))
         self.progress.setStyleSheet("color: rgb(120,120,120)")
         self.progress.setObjectName("progress")
@@ -324,15 +349,18 @@ class Ui_Reconnaissance(object):
         self.pushButton_4.setObjectName("pushButton_4")
         self.pushButton_4.setIcon(QtGui.QIcon("images/learn.png"))
         self.pushButton_4.setIconSize(QtCore.QSize(100, 70))
+        self.pushButton_4bis = QtWidgets.QPushButton(self.widget_2)
+        self.pushButton_4bis.setGeometry(QtCore.QRect(820, 40, 150, 29))
+        self.pushButton_4bis.setObjectName("pushButton_4bis")
         self.pushButton_5 = QtWidgets.QPushButton(self.widget_2)
-        self.pushButton_5.setGeometry(QtCore.QRect(840, 40, 87, 29))
+        self.pushButton_5.setGeometry(QtCore.QRect(1000, 40, 87, 29))
         self.pushButton_5.setObjectName("pushButton_5")
         self.widget_4 = QtWidgets.QWidget(self.widget_2)
         self.widget_4.setGeometry(QtCore.QRect(945, 200, 7, 401))
         self.widget_4.setStyleSheet("background-color: rgb(69, 69, 69);")
         self.widget_4.setObjectName("widget_4")
         self.widget_6 = QtWidgets.QWidget(self.widget_2)
-        self.widget_6.setGeometry(QtCore.QRect(20, 90, 771, 1))
+        self.widget_6.setGeometry(QtCore.QRect(20, 90, 960, 1))
         self.widget_6.setStyleSheet("background-color: rgb(69, 69, 69);")
         self.widget_6.setObjectName("widget_6")
         MainWindow.setCentralWidget(self.centralwidget)
@@ -343,18 +371,17 @@ class Ui_Reconnaissance(object):
         self.menubar.setObjectName("menubar")
         self.menuFichier = QtWidgets.QMenu(self.menubar)
         self.menuFichier.setObjectName("menuFichier")
-        self.menuListe_Possibilit_es = QtWidgets.QMenu(self.menuFichier)
+        self.menuListe_Possibilit_es = QtWidgets.QAction(MainWindow)
         self.menuListe_Possibilit_es.setObjectName("menuListe_Possibilit_es")
         self.menuEdition = QtWidgets.QMenu(self.menubar)
         self.menuEdition.setObjectName("menuEdition")
-        self.menuApprentissage = QtWidgets.QMenu(self.menubar)
-        self.menuApprentissage.setObjectName("menuApprentissage")
         self.menuParametre = QtWidgets.QMenu(self.menubar)
         self.menuParametre.setObjectName("menuParametre")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.actionOpen = QtWidgets.QAction(MainWindow)
         self.actionSave = QtWidgets.QAction(MainWindow)
         self.actionSave.setObjectName("actionSave")
         self.actionAuto = QtWidgets.QAction(MainWindow)
@@ -363,16 +390,6 @@ class Ui_Reconnaissance(object):
         self.actionNonAuto.setObjectName("actionNonAuto")
         self.actionQuitter = QtWidgets.QAction(MainWindow)
         self.actionQuitter.setObjectName("actionQuitter")
-        self.actionLapin = QtWidgets.QAction(MainWindow)
-        self.actionLapin.setObjectName("actionLapin")
-        self.actionChien = QtWidgets.QAction(MainWindow)
-        self.actionChien.setObjectName("actionChien")
-        self.actionOeil = QtWidgets.QAction(MainWindow)
-        self.actionOeil.setObjectName("actionOeil")
-        self.actionTour_Eiffel = QtWidgets.QAction(MainWindow)
-        self.actionTour_Eiffel.setObjectName("actionTour_Eiffel")
-        self.actionVisage = QtWidgets.QAction(MainWindow)
-        self.actionVisage.setObjectName("actionVisage")
         self.actionClear = QtWidgets.QAction(MainWindow)
         self.actionClear.setObjectName("actionClear")
         self.actionAnnuler = QtWidgets.QAction(MainWindow)
@@ -385,38 +402,22 @@ class Ui_Reconnaissance(object):
         self.actionMenu.setObjectName("actionMenu")
         self.actionParam_tres = QtWidgets.QAction(MainWindow)
         self.actionParam_tres.setObjectName("actionParam_tres")
-        self.menuListe_Possibilit_es.addSeparator()
-        self.menuListe_Possibilit_es.addAction(self.actionLapin)
-        self.menuListe_Possibilit_es.addAction(self.actionChien)
-        self.menuListe_Possibilit_es.addAction(self.actionOeil)
-        self.menuListe_Possibilit_es.addAction(self.actionTour_Eiffel)
-        self.menuListe_Possibilit_es.addAction(self.actionVisage)
-        self.menuFichier.addAction(self.menuListe_Possibilit_es.menuAction())
         self.menuFichier.addAction(self.actionOuvrir)
         self.menuFichier.addAction(self.actionMenu)
         self.menuFichier.addAction(self.actionSave)
+        self.menuFichier.addAction(self.menuListe_Possibilit_es)
         self.menuFichier.addAction(self.actionQuitter)
         self.menuEdition.addAction(self.actionClear)
         self.menuEdition.addAction(self.actionAnnuler)
-        self.menuEdition.addSeparator()
         self.menuEdition.addAction(self.actionRevenir)
         self.menuParametre.addAction(self.actionAuto)
         self.menuParametre.addAction(self.actionNonAuto)
-        self.menuApprentissage.addAction(self.actionParam_tres)
         self.menubar.addAction(self.menuFichier.menuAction())
         self.menubar.addAction(self.menuEdition.menuAction())
-        self.menubar.addAction(self.menuApprentissage.menuAction())
         self.menubar.addAction(self.menuParametre.menuAction())
 
-        self.actionClear.setShortcut("Ctrl+C")
-        self.actionSave.setShortcut("Ctrl+S")
-        self.actionQuitter.setShortcut("Ctrl+D")
-        self.actionMenu.setShortcut("Ctrl+M")
-        self.actionAuto.setShortcut("Ctrl+A")
-        self.actionNonAuto.setShortcut("Ctrl+N")
-        self.actionAnnuler.setShortcut("Ctrl+Z")
-
         self.actionSave.triggered.connect(self.save)
+        self.actionOuvrir.triggered.connect(lambda: self.openImage(MainWindow))
         self.actionAuto.triggered.connect(self.auto)
         self.actionNonAuto.triggered.connect(self.nonAuto)
         self.actionMenu.triggered.connect(lambda: self.menu(MainWindow))
@@ -430,7 +431,10 @@ class Ui_Reconnaissance(object):
         self.pushButton_2.clicked.connect(self.changePen)
         self.pushButton_3.clicked.connect(self.changePen)
         self.pushButton_4.clicked.connect(self.apprentissageT)
+        self.pushButton_4bis.clicked.connect(self.listePoss)
         self.spinbox.valueChanged.connect(self.on_spinbox_change)
+        self.menuListe_Possibilit_es.triggered.connect(self.listePoss)
+        self.actionRevenir.triggered.connect(self.revenir)
 
         self.timer.timeout.connect(self.timeout)
         self.timer.start()
@@ -438,12 +442,13 @@ class Ui_Reconnaissance(object):
 
         self.retranslateUi(MainWindow)
 
-        self.canvas = Canvas(True,12)
+        self.canvas = Canvas(True,minPen)
         self.canvas.setStyleSheet("border: 2px solid #235342")
         w = QtWidgets.QWidget(self.centralwidget)
         l = QtWidgets.QVBoxLayout(self.centralwidget)
         w.setLayout(l)
-        w.setGeometry(QtCore.QRect(150, 160, 550, 550))
+        w.setGeometry(QtCore.QRect(155, 135, 550, 550))
+        #w.setGeometry(QtCore.QRect(30, 120, 870, 600))
         l.addWidget(self.canvas)
 
         self.canvas2 = Canvas(False,12)
@@ -451,10 +456,21 @@ class Ui_Reconnaissance(object):
         self.canvas2.setStyleSheet("border: 2px solid #235342")
         l = QtWidgets.QVBoxLayout(self.centralwidget)
         self.w.setLayout(l)
-        self.w.setGeometry(QtCore.QRect(1070, 237, 400, 400))
+        self.w.setGeometry(QtCore.QRect(1035, 190, 400, 400))
         l.addWidget(self.canvas2)
 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        self.actionClear.setShortcut("Ctrl+R")
+        self.actionRevenir.setShortcut("Ctrl+Y")
+        self.actionSave.setShortcut("Ctrl+S")
+        self.actionOuvrir.setShortcut("Ctrl+O")
+        self.actionQuitter.setShortcut("Ctrl+D")
+        self.actionMenu.setShortcut("Ctrl+M")
+        self.actionAuto.setShortcut("Ctrl+B")
+        self.actionAnnuler.setShortcut("Ctrl+T")
+        self.actionNonAuto.setShortcut("Ctrl+N")
+        self.menuListe_Possibilit_es.setShortcut("Ctrl+P")
 
         self.pen()
         self.changePen()
@@ -468,22 +484,15 @@ class Ui_Reconnaissance(object):
         self.label.setText(_translate("MainWindow", ""))
         self.pushButton.setText(_translate("MainWindow", "→"))
         self.menuFichier.setTitle(_translate("MainWindow", "Fichier"))
-        self.menuListe_Possibilit_es.setTitle(_translate("MainWindow", "Liste Possibilitées"))
+        self.menuListe_Possibilit_es.setText(_translate("MainWindow", "Que puis-je dessiner ?"))
         self.menuEdition.setTitle(_translate("MainWindow", "Edition"))
-        self.menuApprentissage.setTitle(_translate("MainWindow", "Apprentissage"))
         self.menuParametre.setTitle(_translate("MainWindow", "Paramètre"))
         self.actionQuitter.setText(_translate("MainWindow", "Quitter"))
-        self.actionLapin.setText(_translate("MainWindow", "Lapin"))
-        self.actionChien.setText(_translate("MainWindow", "Chien"))
-        self.actionOeil.setText(_translate("MainWindow", "Oeil"))
-        self.actionTour_Eiffel.setText(_translate("MainWindow", "Tour Eiffel"))
-        self.actionVisage.setText(_translate("MainWindow", "Visage"))
         self.actionClear.setText(_translate("MainWindow", "Effacer"))
         self.actionAnnuler.setText(_translate("MainWindow", "Annuler"))
         self.actionRevenir.setText(_translate("MainWindow", "Revenir"))
         self.actionOuvrir.setText(_translate("MainWindow", "Ouvrir"))
         self.actionMenu.setText(_translate("MainWindow", "Menu Principal"))
-        self.actionParam_tres.setText(_translate("MainWindow", "Paramètres"))
         self.actionSave.setText(_translate("MainWindow", "Enregistrer image"))
         self.actionAuto.setText(_translate("MainWindow", "Mode Automatique"))
         self.actionNonAuto.setText(_translate("MainWindow", "Mode Button"))
@@ -493,6 +502,7 @@ class Ui_Reconnaissance(object):
         self.pushButton_3.setText(_translate("MainWindow", "🗑"))
         self.label_2.setText(_translate("MainWindow", "|"))
         self.pushButton_4.setText(_translate("MainWindow", "Apprendre !"))
+        self.pushButton_4bis.setText(_translate("MainWindow", "Que puis-je dessiner ?"))
         self.pushButton_5.setText(_translate("MainWindow", "Chercher !"))
 
 

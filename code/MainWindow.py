@@ -9,7 +9,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import Traitement as traitement
 import Reconnaissance as reconnaissance
-
+import Dessin as dessin
 
 class Ui_MainWindow(object):
 
@@ -28,7 +28,11 @@ class Ui_MainWindow(object):
         MainWindow.close()
 
     def paint(self):
-        print("Pour bientôt !")
+        self.dessinImage = QtWidgets.QMainWindow()
+        self.ui = dessin.Ui_Dessin()
+        self.ui.setupUi(self.dessinImage)
+        self.dessinImage.show()
+        MainWindow.close()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("Pix")

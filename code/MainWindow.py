@@ -10,6 +10,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import Traitement as traitement
 import Reconnaissance as reconnaissance
 import Dessin as dessin
+import MainWindow as menu
 
 class Ui_MainWindow(object):
 

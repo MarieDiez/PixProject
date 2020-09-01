@@ -10,7 +10,6 @@ import numpy as np
 import os
 import time
 import MainWindow as menu
-import MainWindow as menu
 from PIL import Image
 
 class Action(Thread):

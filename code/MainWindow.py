@@ -10,7 +10,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import Traitement as traitement
 import Reconnaissance as reconnaissance
 import Dessin as dessin
-import MainWindow as menu
 
 class Ui_MainWindow(object):
 
@@ -28,7 +27,7 @@ class Ui_MainWindow(object):
         self.reconnaissanceImage.show()
         MainWindow.close()
 
-    def paint(self):
+    def paint(self, MainWindow):
         self.dessinImage = QtWidgets.QMainWindow()
         self.ui = dessin.Ui_Dessin()
         self.ui.setupUi(self.dessinImage)
@@ -123,7 +122,7 @@ class Ui_MainWindow(object):
 
         self.pushButton.clicked.connect(lambda: self.traitement(MainWindow))
         self.pushButton_2.clicked.connect(lambda: self.reconnaissance(MainWindow))
-        self.pushButton_3.clicked.connect(self.paint)
+        self.pushButton_3.clicked.connect(lambda: self.paint(MainWindow))
         self.exitAct.clicked.connect(QtWidgets.QApplication.exit)
 
         self.exitAct.setShortcut("Ctrl+X")

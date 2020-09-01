@@ -285,6 +285,9 @@ class Ui_Reconnaissance(object):
         self.ui = ListePossibilite.Ui_listePossibilite()
         self.ui.setupUi(self.liste)
         self.liste.show()
+    
+    def quitter(self):
+        QtCore.QCoreApplication.instance().quit()
 
     def setupUi(self, MainWindow):
         global status, crayon
@@ -419,6 +422,7 @@ class Ui_Reconnaissance(object):
         self.actionSave.triggered.connect(self.save)
         self.actionOuvrir.triggered.connect(lambda: self.openImage(MainWindow))
         self.actionAuto.triggered.connect(self.auto)
+        self.actionQuitter.triggered.connect(self.quitter)
         self.actionNonAuto.triggered.connect(self.nonAuto)
         self.actionMenu.triggered.connect(lambda: self.menu(MainWindow))
         self.pushButton_5.clicked.connect(self.reconnaissanceT)
